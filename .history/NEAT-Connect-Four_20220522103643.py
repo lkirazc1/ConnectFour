@@ -1,0 +1,135 @@
+import pygame
+import pickle
+import neat
+import pickle
+import ConnectFour
+
+
+class Grid:
+    def __init__(self, rows, cols):
+        self.rows = rows
+        self.cols = cols
+        self.board = [[0 for _ in range(cols)] for _ in range(rows)]
+        print(self.board)
+
+    def place_piece(self, col: int, piece: int) -> None or tuple:
+        for r in range(self.rows - 1, -1, -1):
+            if self.board[r][col] == 0:
+                self.board[r][col] = piece
+                # return the position index where the piece was placed
+                return r, col
+
+        return None
+
+
+    def check_done(self, row, column, color):
+
+        # check vertically
+        in_a_row = 1
+        for r in range(row + 1, self.rows):
+            if self.board[r][column] == color:
+                in_a_row += 1
+            else:
+                break
+
+        if in_a_row >= 4:
+            return True
+
+        # check horizontally
+
+        in_a_row = 1
+        for c in range(column + 1, self.cols):
+            if self.board[row][c] == color:
+                in_a_row += 1
+
+            else:
+                break
+
+        for c in range(column - 1, -1 , -1):
+            if self.board[row][c] == color:
+                in_a_row += 1
+            else:
+                break
+
+        if in_a_row >= 4:
+            return True
+
+        # check diagonally right
+        in_a_row = 1
+        r = row - 1
+        c = column + 1
+        while r >= 0 and c < self.cols:
+            if self.board[r][c] == color:
+                in_a_row += 1
+            else:
+                break
+
+        r = row + 1
+        c = column - 1
+        while r < self.rows and c >= 0:
+            if self.board[r][c] == color:
+                in_a_row += 1
+            else:
+                break
+        
+        if in_a_row >= 4:
+            return True
+        
+        # check diagonally left
+
+        in_a_row = 1
+        r = row - 1
+        c = column - 1
+        while r >= 0 and c >= 0:
+            if self.board[r][c] == color:
+                in_a_row += 1
+            else:
+                break
+
+        r = row + 1
+        c = column + 1
+        while r < self.rows and c < self.cols:
+            if self.board[r][c] == color:
+                in_a_row += 1
+            else:
+                break
+        
+        if in_a_row >= 4:
+            return True
+        
+        return False        
+
+
+    def draw(self, win):
+        win.fill((0, 0, 255))
+        pygame.draw.rect(win, (255, 255, 255), pygame.Rect(0, 0, 678, 90))
+        y = 147
+        for circle in range(self.rows * self.cols):
+            if circle % 7 == 0 and circle != 0:
+                y += 94
+            x = 57 + (circle % 7) * 94
+            color = (255, 255, 255)
+            if self.board[circle // self.cols][circle % self.cols] == 1:
+                color = (255, 0, 0)
+            elif self.board[circle // self.cols][circle % self.cols] == -1:
+                color = (255, 255, 0)
+            pygame.draw.circle(win, color, (x, y), 37)
+        pygame.display.update()
+
+
+
+
+
+
+def main():
+
+    choice = input("Do you want to play two player, against an easy ai, a medium ai, or a hard ai? (t, e, m, or h) ")
+    while choice.lower() not in ['t', 'e', 'm', 'h']:
+        choice = input("Do you want to play two player, against an easy ai, a medium ai, or a hard ai? (t, e, m, or h) ")
+    if choice == 't':
+        ConnectFour.main()
+    elif choice == 'e':
+        
+
+if __name__ == '__main__':
+    main()
