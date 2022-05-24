@@ -83,6 +83,9 @@ def eval_genomes(genomes, config):
                 executor.submit(Game.train_ai, game, genome1, genome2, config)
                 #game.train_ai(genome1, genome2, config)
 
+    for t in collected_threads:
+        t.join()
+
 def run_neat(config):
     #p = neat.Population(config)
     p = neat.Checkpointer.restore_checkpoint('neat-checkpoint-3')

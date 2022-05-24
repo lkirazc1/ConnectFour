@@ -80,8 +80,14 @@ def eval_genomes(genomes, config):
             for genome_id2, genome2 in genomes[i + 1:]:
                 genome2.fitness = 0 if genome2.fitness == None else genome2.fitness
                 game = Game()
-                executor.submit(Game.train_ai, game, genome1, genome2, config)
+                
+                t = threading.Thread(target=Game.train_ai, args=(game, genome1, genome2, config))
+                t.start()
+                collected_threads.append(t)
                 #game.train_ai(genome1, genome2, config)
+
+    for t in collected_threads:
+        t.join()
 
 def run_neat(config):
     #p = neat.Population(config)

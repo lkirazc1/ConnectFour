@@ -167,7 +167,6 @@ static PyObject *PyBoard_place_piece(PyBoard *self, PyObject *args)
     int result = place_piece(self->board, column, color);
     if (result == -1)
     {
-        Py_INCREF(Py_None);
         return Py_None;
     }
     else
@@ -198,14 +197,6 @@ static int PyBoard_init(PyBoard *self, PyObject *args, PyObject *kwds)
     memset(self->board, EMPTY, sizeof(self->board));
     return 0;
 }
-
-static PyMethodDef PyBoard_methods[] = {
-    {"test", (PyCFunction)PyBoard_test, METH_VARARGS, "Python interface for awesome connect four"},
-    {"place_piece", (PyCFunction)PyBoard_place_piece, METH_VARARGS, "Places a piece at col with color"},
-    {"check_done", (PyCFunction)PyBoard_check_done, METH_VARARGS, "Checks if connect four is won by anybody"},
-    {"get_color", (PyCFunction)PyBoard_get_color, METH_VARARGS, "Returns the piece that is at that place"},
-    {NULL, NULL, 0, NULL},
-};
 
 static PyTypeObject PyBoardType = {
     PyVarObject_HEAD_INIT(NULL, 0)

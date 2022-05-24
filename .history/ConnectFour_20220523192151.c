@@ -167,7 +167,6 @@ static PyObject *PyBoard_place_piece(PyBoard *self, PyObject *args)
     int result = place_piece(self->board, column, color);
     if (result == -1)
     {
-        Py_INCREF(Py_None);
         return Py_None;
     }
     else
@@ -193,12 +192,6 @@ static PyObject *PyBoard_test(PyBoard *self, PyObject *args)
     return PyLong_FromLong(42);
 }
 
-static int PyBoard_init(PyBoard *self, PyObject *args, PyObject *kwds)
-{
-    memset(self->board, EMPTY, sizeof(self->board));
-    return 0;
-}
-
 static PyMethodDef PyBoard_methods[] = {
     {"test", (PyCFunction)PyBoard_test, METH_VARARGS, "Python interface for awesome connect four"},
     {"place_piece", (PyCFunction)PyBoard_place_piece, METH_VARARGS, "Places a piece at col with color"},
@@ -207,17 +200,7 @@ static PyMethodDef PyBoard_methods[] = {
     {NULL, NULL, 0, NULL},
 };
 
-static PyTypeObject PyBoardType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "cConnectFour.Board",
-    .tp_doc = PyDoc_STR("Board type"),
-    .tp_basicsize = sizeof(PyBoard),
-    .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
-    .tp_new = PyType_GenericNew,
-    .tp_init = (initproc) PyBoard_init,
-    .tp_methods = PyBoard_methods,
-};
+static PyTypeObject PyBoardType = {PyVarObject_HEAD_INIT(NULL, 0) "cConnectFour.Board"};
 
 static struct PyModuleDef module = {
     PyModuleDef_HEAD_INIT,
@@ -230,6 +213,14 @@ PyMODINIT_FUNC PyInit_cConnectFour()
 {
     PyObject *m;
 
+    PyBoardType.tp_new = PyType_GenericNew;
+    PyBoardType.tp_basicsize = sizeof(PyBoard);
+    PyBoardType.tp_dealloc = (destructor)PyBoard_dealloc;
+    PyBoardType.tp_flags = Py_TPFLAGS_DEFAULT;
+    PyBoardType.tp_doc = "Board type";
+    PyBoardType.tp_methods = PyBoard_methods;
+    PyBoardType.tp_init = (initproc)PyBoard_init;
+
     if (PyType_Ready(&PyBoardType) < 0)
         return NULL;
 
@@ -238,11 +229,7 @@ PyMODINIT_FUNC PyInit_cConnectFour()
         return NULL;
 
     Py_INCREF(&PyBoardType);
-    if (PyModule_AddObject(m, "Board", (PyObject *)&PyBoardType) < 0) {
-        Py_DECREF(&PyBoardType);
-        Py_DECREF(m);
-        return NULL;
-    }
+    PyModule_AddObject(m, "Board", (PyObject *)&PyBoardType);
 
     return m;
 }

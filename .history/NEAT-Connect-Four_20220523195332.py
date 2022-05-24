@@ -72,16 +72,22 @@ def eval_genomes(genomes, config):
     #WIDTH, HEIGHT = 678, 674
     #win = pygame.display.set_mode((WIDTH, HEIGHT))
 
-    with ThreadPoolExecutor(max_workers=8) as executor:
-        for i, (genome_id1, genome1) in enumerate(genomes):
-            if i == len(genomes) - 1:
-                break
-            genome1.fitness = 0
-            for genome_id2, genome2 in genomes[i + 1:]:
-                genome2.fitness = 0 if genome2.fitness == None else genome2.fitness
-                game = Game()
-                executor.submit(Game.train_ai, game, genome1, genome2, config)
-                #game.train_ai(genome1, genome2, config)
+    with ThreadPoolExecutor
+    collected_threads = []
+    for i, (genome_id1, genome1) in enumerate(genomes):
+        if i == len(genomes) - 1:
+            break
+        genome1.fitness = 0
+        for genome_id2, genome2 in genomes[i + 1:]:
+            genome2.fitness = 0 if genome2.fitness == None else genome2.fitness
+            game = Game()
+            t = threading.Thread(target=Game.train_ai, args=(game, genome1, genome2, config))
+            t.start()
+            collected_threads.append(t)
+            #game.train_ai(genome1, genome2, config)
+
+    for t in collected_threads:
+        t.join()
 
 def run_neat(config):
     #p = neat.Population(config)

@@ -167,7 +167,7 @@ static PyObject *PyBoard_place_piece(PyBoard *self, PyObject *args)
     int result = place_piece(self->board, column, color);
     if (result == -1)
     {
-        Py_INCREF(Py_None);
+        Py_INCREF()
         return Py_None;
     }
     else
