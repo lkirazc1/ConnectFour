@@ -22,7 +22,7 @@ class Game:
     def unpack_board(self):
         return [self.grid.get_color(r, c) for r in range(self.rows) for c in range(self.cols)]
 
-    def test_ai(self, win, genome, config):
+    def train_ai(self, win, width, genome, config):
         net = neat.nn.FeedForwardNetwork.create(genome, config)
         done = False
         presses = 3
@@ -133,13 +133,13 @@ def run_neat(config):
 
 
 def test_ai(config):
-    width, height = 678, 674
+    width, height = 700, 500
     window = pygame.display.set_mode((width, height))
     game = Game()
-    with open("best.pickle", "rb") as f:
+    with open("best.pickle") as f:
         winner = pickle.load(f)
     
-    game.test_ai(window, winner, config)
+    
 
 
 

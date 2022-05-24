@@ -139,7 +139,7 @@ def test_ai(config):
     with open("best.pickle", "rb") as f:
         winner = pickle.load(f)
     
-    game.test_ai(window, winner, config)
+    game.test_ai(window, winner, )
 
 
 

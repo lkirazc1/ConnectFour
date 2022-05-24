@@ -136,10 +136,10 @@ def test_ai(config):
     width, height = 678, 674
     window = pygame.display.set_mode((width, height))
     game = Game()
-    with open("best.pickle", "rb") as f:
+    with open("best.pickle") as f:
         winner = pickle.load(f)
     
-    game.test_ai(window, winner, config)
+    game.test_ai()
 
 
 

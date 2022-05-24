@@ -22,7 +22,7 @@ class Game:
     def unpack_board(self):
         return [self.grid.get_color(r, c) for r in range(self.rows) for c in range(self.cols)]
 
-    def test_ai(self, win, genome, config):
+    def train_ai(self, win, width, genome, config):
         net = neat.nn.FeedForwardNetwork.create(genome, config)
         done = False
         presses = 3
@@ -40,7 +40,6 @@ class Game:
                         place = self.grid.place_piece(presses, -1)
                         if place is None:
                             break
-                        presses = 3
                         is_done = self.grid.check_done(place[0], place[1], -1)
                         if is_done:
                             print("player wins")
@@ -53,8 +52,8 @@ class Game:
                         if self.grid.check_done(place[0], place[1], RED):
                             print("computer wins")
                             quit()
-
-            self.grid.update(win, presses, (255, 255, 0))
+                                        
+            
 
 
 
@@ -133,13 +132,7 @@ def run_neat(config):
 
 
 def test_ai(config):
-    width, height = 678, 674
-    window = pygame.display.set_mode((width, height))
-    game = Game()
-    with open("best.pickle", "rb") as f:
-        winner = pickle.load(f)
     
-    game.test_ai(window, winner, config)
 
 
 
@@ -152,8 +145,8 @@ if __name__ == "__main__":
                          neat.DefaultSpeciesSet, neat.DefaultStagnation, 
                          config_path)
     
-    #run_neat(config)
-    test_ai(config)
+    run_neat(config)
+    #test_ai(config)
 
 
 
