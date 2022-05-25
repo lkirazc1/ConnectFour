@@ -4,6 +4,7 @@ import neat
 import pickle
 import os
 from concurrent.futures.thread import ThreadPoolExecutor
+from threading import Thread
 from grid import Grid
 pygame.init()
 YELLOW = -1
@@ -107,6 +108,8 @@ def eval_genomes(genomes, config):
     #WIDTH, HEIGHT = 678, 674
     #win = pygame.display.set_mode((WIDTH, HEIGHT))
 
+    # with thread poll executor
+
     #with ThreadPoolExecutor(max_workers=8) as executor:
     #    for i, (genome_id1, genome1) in enumerate(genomes):
     #        if i == len(genomes) - 1:
@@ -117,18 +120,43 @@ def eval_genomes(genomes, config):
     #            game = Game()
     #            executor.submit(Game.train_ai, game, genome1, genome2, config)
                 #game.train_ai(genome1, genome2, config)
-    for i, (genome_id1, genome1) in enumerate(genomes):  
-        if i == len(genomes) - 1:
-            break
-        genome1.fitness = 0
+
+    # no thread
+    
+    #for i, (genome_id1, genome1) in enumerate(genomes):  
+    #    if i == len(genomes) - 1:
+    #        break
+    #    genome1.fitness = 0
+    #    for genome_id2, genome2 in genomes[i + 1:]:
+    #        genome2.fitness = 0 if genome2.fitness == None else genome2.fitness
+    #        game = Game()
+    #        game.train_ai(genome1, genome2, config)
+
+
+    # thread
+
+    def run_genome_set(genomes, genome1, config):
         for genome_id2, genome2 in genomes[i + 1:]:
             genome2.fitness = 0 if genome2.fitness == None else genome2.fitness
             game = Game()
             game.train_ai(genome1, genome2, config)
 
+
+    for i, (genome_id1, genome1) in enumerate(genomes):
+        if i == len(genomes) - 1:
+            break
+        genome1.fitness = 0
+        
+
+
+
+
+
+
+
 def run_neat(config):
-    #p = neat.Population(config)
-    p = neat.Checkpointer.restore_checkpoint('neat-checkpoint-386')
+    p = neat.Population(config)
+    #p = neat.Checkpointer.restore_checkpoint('neat-checkpoint-386')
     p.add_reporter(neat.StdOutReporter(True))
     stats = neat.StatisticsReporter()
     p.add_reporter(stats)
@@ -160,8 +188,8 @@ if __name__ == "__main__":
                          neat.DefaultSpeciesSet, neat.DefaultStagnation, 
                          config_path)
     
-    run_neat(config)
-    #test_ai(config)
+    #run_neat(config)
+    test_ai(config)
 
 
 
