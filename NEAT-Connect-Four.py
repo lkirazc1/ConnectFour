@@ -103,6 +103,14 @@ class Game:
             #self.grid.draw(self.win)
     
 
+def run_genome_set(genomes, genome1, config, i):
+    for genome_id2, genome2 in genomes[i + 1:]:
+        genome2.fitness = 0 if genome2.fitness == None else genome2.fitness
+        game = Game()
+        game.train_ai(genome1, genome2, config)
+
+
+
 
 def eval_genomes(genomes, config):
     #WIDTH, HEIGHT = 678, 674
@@ -135,23 +143,12 @@ def eval_genomes(genomes, config):
 
     # thread
 
-    def run_genome_set(genomes, genome1, config):
-        for genome_id2, genome2 in genomes[i + 1:]:
-            genome2.fitness = 0 if genome2.fitness == None else genome2.fitness
-            game = Game()
-            game.train_ai(genome1, genome2, config)
-
-
     for i, (genome_id1, genome1) in enumerate(genomes):
         if i == len(genomes) - 1:
             break
         genome1.fitness = 0
+        genome2_thread = Thread(target=run_genome_set(genomes, genome1, config, i))
         
-
-
-
-
-
 
 
 def run_neat(config):
@@ -188,8 +185,8 @@ if __name__ == "__main__":
                          neat.DefaultSpeciesSet, neat.DefaultStagnation, 
                          config_path)
     
-    #run_neat(config)
-    test_ai(config)
+    run_neat(config)
+    #test_ai(config)
 
 
 
