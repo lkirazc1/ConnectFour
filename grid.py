@@ -33,6 +33,7 @@ class Grid:
         #return None
 
 
+
     def check_done(self, row, column, color):
         return self.board.check_done(row, column, color) != 0
 
