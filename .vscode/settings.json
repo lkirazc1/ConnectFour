@@ -1,13 +1,59 @@
 {
-    "editor.acceptSuggestionOnEnter": "on",
+    "editor.acceptSuggestionOnEnter": "off",
     "editor.quickSuggestions": {
-        "other": true,
-        "comments": true,
-        "strings": true
+        "other": false,
+        "comments": false,
+        "strings": false
     },
-    "editor.suggestOnTriggerCharacters": true,
-    "editor.tabCompletion": "on",
-    "editor.acceptSuggestionOnCommitCharacter": true,
-    "editor.wordBasedSuggestions": true,
-
+    "editor.suggestOnTriggerCharacters": false,
+    "editor.tabCompletion": "off",
+    "editor.acceptSuggestionOnCommitCharacter": false,
+    "editor.wordBasedSuggestions": false,
+    "better-comments.tags": [
+        {
+            "tag": "!",
+            "color": "#FF2D00",
+            "strikethrough": false,
+            "underline": false,
+            "backgroundColor": "transparent",
+            "bold": false,
+            "italic": false
+        },
+        {
+            "tag": "?",
+            "color": "#3498DB",
+            "strikethrough": false,
+            "underline": false,
+            "backgroundColor": "transparent",
+            "bold": false,
+            "italic": false
+        },
+        {
+            "tag": "//",
+            "color": "#474747",
+            "strikethrough": true,
+            "underline": false,
+            "backgroundColor": "transparent",
+            "bold": false,
+            "italic": false
+        },
+        {
+            "tag": "todo",
+            "color": "#FF8C00",
+            "strikethrough": false,
+            "underline": false,
+            "backgroundColor": "transparent",
+            "bold": false,
+            "italic": false
+        },
+        {
+            "tag": "*",
+            "color": "#98C379",
+            "strikethrough": false,
+            "underline": false,
+            "backgroundColor": "transparent",
+            "bold": false,
+            "italic": false
+        }
+    ]
 }
