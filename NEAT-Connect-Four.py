@@ -6,9 +6,34 @@ import os
 from concurrent.futures.thread import ThreadPoolExecutor
 from threading import Thread
 from grid import Grid
+from multiprocessing import Pool
+import time
+
 pygame.init()
 YELLOW = -1
 RED = 1
+
+
+class ParallelEvaluator(object):
+    def __init__(self, num_workers, eval_function, timeout=None, max_task_per_child=None):
+        """
+        eval_function should take one argument, a tuple of (genome object, config object)
+        and return a single float (the genome's fitness)
+        """
+        self.eval_function = eval_function
+        self.timeout = timeout
+        self.pool = Pool(processes=num_workers, maxtaskperchild=max_task_per_child)
+
+    def __del__(self):
+        self.pool.close()
+        self.pool.join()
+        self.pool.terminate()
+
+    def evaluate(self, genomes, config):
+        jobs = []
+        for _, genome in genomes:
+            jobs.append(self.pool.apply_async(self.eval_function, (genome, config)))
+
 
 class Game:
     def __init__(self):
@@ -59,49 +84,53 @@ class Game:
 
 
 
-    def train_ai(self, genome1, genome2, config):
-        net1 = neat.nn.FeedForwardNetwork.create(genome1, config)
-        net2 = neat.nn.FeedForwardNetwork.create(genome2, config)
-        
+    def train_ai(self, genome, config, first=False):
+        net = neat.nn.FeedForwardNetwork.create(genome, config)
+        fitness = 0
         done = False
+        first_round = True
         while not done:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     quit()
-            output1 = net1.activate(self.unpack_board())
-            for i, val in sorted(list(enumerate(output1)), key=lambda x: x[1], reverse=True):
-                place1 = self.grid.place_piece(i, YELLOW)
-                if place1 is not None:
+            if not first_round:
+                output1 = net.activate(self.unpack_board())
+                for i, val in sorted(list(enumerate(output1)), key=lambda x: x[1], reverse=True):
+                    place1 = self.grid.place_piece(i, YELLOW)
+                    if place1 is not None:
+                        break
+                    else:
+                        fitness -= 1
+
+                if self.grid.check_done(place1[0], place1[1], YELLOW):
+                    fitness += 25
                     break
-                else:
-                    genome1.fitness -= 1
-
-            if self.grid.check_done(place1[0], place1[1], YELLOW):
-                genome1.fitness += 1
-                break
-            elif 0 not in self.unpack_board():
-                genome1.fitness += 1
-                genome2.fitness += 1
-                break
-
-            output2 = net2.activate(self.unpack_board())
-            for i, val in sorted(list(enumerate(output2)), key=lambda x: x[1], reverse=True):
-                place2 = self.grid.place_piece(i, RED)
-                if place2 is not None:
+                elif 0 not in self.unpack_board():
+                    fitness += 15
                     break
-                else:
-                    genome2.fitness -= 1        
-            if self.grid.check_done(place2[0], place2[1], RED):
-                genome2.fitness += 1
-                break
-            elif 0 not in self.unpack_board():
-                genome1.fitness += 1
-                genome2.fitness += 1
-                break
+            else:
+                first_round = False
 
+
+            if first:
+                col, _ = self.grid.minimax(RED, place1[0], place1[1], time.time())
+                last_row, last_row = self.grid.place_piece(col, RED)
+            else:
+                try:
+                    col, _ = self.grid.minimax(YELLOW, place1[0], place1[1], time.time())
+                except NameError:
+                    col, _ = self.grid.minimax(YELLOW, 0, 0, time.time())
+                last_row, last_col = self.grid.place_piece(col, YELLOW)
+
+            minimax_wins = self.grid.check_done(last_row, last_col, self.grid.get_color(last_row, last_col))
+            if minimax_wins:
+                for color in self.unpack_board():
+                    if color != 0:
+                        fitness += 1
+            
             #self.grid.draw(self.win)
-    
+        return fitness
 
 def run_genome_set(genomes, genome1, config, i):
     for genome_id2, genome2 in genomes[i + 1:]:
@@ -112,7 +141,7 @@ def run_genome_set(genomes, genome1, config, i):
 
 
 
-def eval_genomes(genomes, config):
+def eval_genomes(genome_config_tuple):
     #WIDTH, HEIGHT = 678, 674
     #win = pygame.display.set_mode((WIDTH, HEIGHT))
 
@@ -129,26 +158,17 @@ def eval_genomes(genomes, config):
     #            executor.submit(Game.train_ai, game, genome1, genome2, config)
                 #game.train_ai(genome1, genome2, config)
 
-    # no thread
-    
-    #for i, (genome_id1, genome1) in enumerate(genomes):  
-    #    if i == len(genomes) - 1:
-    #        break
-    #    genome1.fitness = 0
-    #    for genome_id2, genome2 in genomes[i + 1:]:
-    #        genome2.fitness = 0 if genome2.fitness == None else genome2.fitness
-    #        game = Game()
-    #        game.train_ai(genome1, genome2, config)
+    genome = genome_config_tuple[0]
+    config = genome_config_tuple[1]
+    fitness = 0
+    for _ in range(5):
+        game = Game()
+        fitness += game.train_ai(genome, config, first=True)
+    for _ in range(5):
+        game = Game()
+        fitness += game.train_ai(genome, config, first=False)
 
-
-    # thread
-
-    for i, (genome_id1, genome1) in enumerate(genomes):
-        if i == len(genomes) - 1:
-            break
-        genome1.fitness = 0
-        genome2_thread = Thread(target=run_genome_set(genomes, genome1, config, i))
-        
+    return fitness
 
 
 def run_neat(config):

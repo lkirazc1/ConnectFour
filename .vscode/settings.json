@@ -1,13 +1,13 @@
 {
-    "editor.acceptSuggestionOnEnter": "off",
+    "editor.acceptSuggestionOnEnter": "on",
     "editor.quickSuggestions": {
-        "other": false,
-        "comments": false,
-        "strings": false
+        "other": true,
+        "comments": true,
+        "strings": true
     },
-    "editor.suggestOnTriggerCharacters": false,
-    "editor.tabCompletion": "off",
-    "editor.acceptSuggestionOnCommitCharacter": false,
-    "editor.wordBasedSuggestions": false,
+    "editor.suggestOnTriggerCharacters": true,
+    "editor.tabCompletion": "on",
+    "editor.acceptSuggestionOnCommitCharacter": true,
+    "editor.wordBasedSuggestions": true,
 
 }
