@@ -8,6 +8,10 @@ typedef enum
     RED = 1,
 } Color;
 
+static int other_color(Color color) {
+    return -color;  // RED to YELLOW and vice versa
+}
+
 #define kRows 6
 #define kColumns 7
 
@@ -16,6 +20,15 @@ typedef struct
     PyObject_HEAD;
     Color board[kRows][kColumns];
 } PyBoard;
+
+static int board_full(const Color board[kRows][kColumns]) {
+    for (int i = 0; i < kColumns; i++) {
+        if (board[0][i] == EMPTY) {
+            return 0;
+        }
+    }
+    return 1;
+}
 
 static int place_piece(Color board[kRows][kColumns], int column, Color color)
 {
@@ -146,6 +159,65 @@ static int check_done(const Color board[kRows][kColumns], int row, int column, C
     return 0;
 }
 
+typedef struct {
+    int score;
+    int move_col;
+} MinimaxResult;
+
+static MinimaxResult minimax(Color board[kRows][kColumns], Color color, int last_col, int last_row, int depth_left) {
+    depth_left--;
+    int current_score = check_done(board, last_row, last_col, other_color(color));
+    if (current_score != 0) {  // somebody won!
+        return (MinimaxResult){.score = current_score, .move_col = -1};
+    } else if (board_full(board)) {
+        return (MinimaxResult){.score = 0, .move_col = -1};
+    }
+
+    if (color == RED) {  // maximize computer
+        MinimaxResult max_result = {
+            .score = -123,
+            .move_col = -1,
+        };
+        for (int i = 0; i < kColumns; i++) {
+            static const int kComputerColumnOrder[kColumns] = {3, 4, 2, 5, 1, 6, 0};
+            int column = kComputerColumnOrder[i];
+            if (board[0][column] != EMPTY) continue;
+            if (depth_left <= 0) {
+                return (MinimaxResult){.score = 0, .move_col = column};
+            }
+            int row = place_piece(board, column, color);
+            MinimaxResult next_result = minimax(board, other_color(color), column, row, depth_left);
+            board[row][column] = EMPTY;  // undo exploration
+            if (next_result.score > max_result.score) {
+                max_result = next_result;
+                if (max_result.score == 10) break;
+            }
+        }
+        return max_result;
+    } else {
+        MinimaxResult min_result = {
+            .score = 11,
+            .move_col = -1,
+        };
+        for (int i = 0; i < kColumns; i++) {
+            static const int kComputerColumnOrder[kColumns] = {3, 4, 2, 5, 1, 6, 0};
+            int column = kComputerColumnOrder[i];
+            if (board[0][column] != EMPTY) continue;
+            if (depth_left <= 0) {
+                return (MinimaxResult){.score = 0, .move_col = column};
+            }
+            int row = place_piece(board, column, color);
+            MinimaxResult next_result = minimax(board, other_color(color), column, row, depth_left);
+            board[row][column] = EMPTY;  // undo exploration
+            if (next_result.score < min_result.score) {
+                min_result = next_result;
+                if (min_result.score == -10) break;
+            }
+        }
+        return min_result;
+    }
+}
+
 static PyObject *PyBoard_get_color(PyBoard *self, PyObject *args)
 {
     int row, col;
@@ -176,6 +248,18 @@ static PyObject *PyBoard_place_piece(PyBoard *self, PyObject *args)
     }
 }
 
+static PyObject *PyBoard_minimax(PyBoard* self, PyObject* args) {
+    // Parse args.
+    int row, column, color, max_depth;
+    if (!PyArg_ParseTuple(args, "iii", &color, &row, &column, &max_depth))
+    {
+        return NULL;
+    }
+
+    MinimaxResult result = minimax(self->board, color, column, row, max_depth);
+    return PyTuple_Pack(2, result.score, result.move_col);
+}
+
 static PyObject *PyBoard_check_done(PyBoard *self, PyObject *args)
 {
     // Parse args.
@@ -204,6 +288,7 @@ static PyMethodDef PyBoard_methods[] = {
     {"place_piece", (PyCFunction)PyBoard_place_piece, METH_VARARGS, "Places a piece at col with color"},
     {"check_done", (PyCFunction)PyBoard_check_done, METH_VARARGS, "Checks if connect four is won by anybody"},
     {"get_color", (PyCFunction)PyBoard_get_color, METH_VARARGS, "Returns the piece that is at that place"},
+    {"minimax", (PyCFunction)PyBoard_minimax, METH_VARARGS, "Computes the best move for RED based on minimax"},
     {NULL, NULL, 0, NULL},
 };
 

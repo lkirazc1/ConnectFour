@@ -32,7 +32,8 @@ class Grid:
 
         #return None
 
-
+    def computer_choice(self, color, last_row, last_col, depth):
+        return self.board.minimax(color, last_row, last_col, depth)[1]
 
     def check_done(self, row, column, color):
         return self.board.check_done(row, column, color) != 0
